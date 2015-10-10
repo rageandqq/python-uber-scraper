@@ -1031,5 +1031,57 @@ function resizingWindowGo()
 	window.resizeBy(xchange, ychange);
 }
 
-    console.log(ll2xy(37.769756, -122.414778));
-    console.log(xy2ll(-13627298.8, 4176097.6));
+function return2DXYGrid(xy1, xy2, n) {
+  with(Math) {
+    var dx = abs(xy1.x - xy2.x);
+    var dy = abs(xy1.y - xy2.y);
+
+    var minX = min(xy1.x, xy2.x);
+    var minY = min(xy1.y, xy2.y);
+
+    var a = [];
+    for (var i = 0; i < n; i++) {
+      a.push([]);
+    }
+
+    var x = minX;
+    for (var i = 0; i < n; i++) {
+      var y = minY;
+      for (j = 0; j < n; j++) {
+        a[i][j] = {x: x, y: y};
+        y += dy;
+      }
+      x += dx;
+    }
+  }
+
+  return a;
+}
+
+function printAsLatLong(file, grid) {
+  var fs = require('fs');
+  var stream = fs.createWriteStream(file);
+
+  stream.once('open', function() {
+    grid.forEach(function(row) {
+
+      row.forEach(function(point) {
+        lat_long = xy2ll(point.x, point.y);
+        stream.write(lat_long.latitude + ' ' + lat_long.longitude + '\n');
+      });
+
+    });
+  });
+}
+
+lat1 = parseFloat(process.argv[2])
+long1 = parseFloat(process.argv[3])
+
+lat2 = parseFloat(process.argv[4])
+long2 = parseFloat(process.argv[5])
+
+xy1 = ll2xy(lat1, long1)
+xy2 = ll2xy(lat2, long2)
+
+xy_grid = return2DXYGrid(xy1, xy2, 10)
+printAsLatLong('points.txt', xy_grid)
