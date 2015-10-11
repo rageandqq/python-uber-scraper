@@ -1,8 +1,13 @@
+"""
+Usage:
+    >>python app.py server_token points_file
+"""
+
 import aerospike
-import urllib2
+import datetime
 import json
 import sys
-import datetime
+import urllib2
 
 def _prune_price(price):
     return {
@@ -11,9 +16,14 @@ def _prune_price(price):
     }
 
 args = sys.argv
-FILE_NAME = args[1]
-NUM_POINTS = int(args[2])
-NAMESPACE = 'prod'
+
+###########
+# Constants
+###########
+
+SERVER_TOKEN = args[1]
+FILE_NAME = args[2]
+NAMESPACE = 'test'
 SET = 'price'
 
 #######################
@@ -32,7 +42,6 @@ with open(FILE_NAME, 'r') as ins:
 # Query Uber
 ###########
 
-SERVER_TOKEN = 'fEdujyqYJcU7IM-FjxjDOH6Vc2Y1RAxrB7IVhoBt'
 data_list = []
 
 # Unused requests
@@ -48,15 +57,9 @@ data_list = []
 #        )
 
 try:
-    for i in range(NUM_POINTS):
-        latitude, longitude = lines[i]
+    for latitude, longitude in lines:
         request_price = urllib2.Request('https://api.uber.com/v1/estimates/price?start_latitude={}&start_longitude={}&end_latitude={}&end_longitude={}'.
-                    format(
-                        latitude,
-                        longitude,
-                        latitude,
-                        longitude,
-                    )
+                    format(latitude, longitude, latitude, longitude)
                 )
 
         request_price.add_header('Authorization', 'Token %s' % SERVER_TOKEN)
@@ -73,8 +76,17 @@ try:
 except Exception:
     pass
 
+
+epoch_time = (datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds()
+key = (NAMESPACE, SET, str(epoch_time))
+
+stored_data = {
+    'timestamp': str(epoch_time),
+    'data': data_list,
+}
+
 ##############################
-## Set up aerospike connection
+## Set up aerospike config
 ##############################
 config = {
     'hosts': [
@@ -85,21 +97,12 @@ config = {
     }
 }
 
-client = aerospike.client(config)
-client.connect()
-
 ##############
 # Write to DB
 ##############
-
-epoch_time = (datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds()
-key = ('test', 'price', str(epoch_time),)
-
-stored_data = {
-    'timestamp': str(epoch_time),
-    'data': data_list,
-}
 try:
+    client = aerospike.client(config)
+    client.connect()
     client.put(key, stored_data)
 except Exception:
     pass
