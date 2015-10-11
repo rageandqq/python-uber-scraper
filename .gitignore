@@ -62,3 +62,7 @@ node_modules/
 
 # Saved data files for project
 saved_data*.*
+logs/**
+
+# Swp
+**.**.swp
