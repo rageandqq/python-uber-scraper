@@ -4,6 +4,12 @@ import json
 import sys
 import datetime
 
+def _prune_price(price):
+    return {
+        'display_name': price['display_name'],
+        'surge_multiplier': price['surge_multiplier'],
+    }
+
 args = sys.argv
 FILE_NAME = args[1]
 NUM_POINTS = int(args[2])
@@ -21,21 +27,6 @@ with open(FILE_NAME, 'r') as ins:
         ll_tuple = (strs[0], strs[1])
         lines.append(ll_tuple)
 
-
-##############################
-## Set up aerospike connection
-##############################
-config = {
-    'hosts': [
-        ( '54.152.234.234', 3000, )
-    ],
-    'policies': {
-        'timeout': 1000, # milliseconds
-    }
-}
-
-client = aerospike.client(config)
-client.connect()
 
 ###########
 # Query Uber
@@ -56,26 +47,46 @@ data_list = []
 #            format(latitude, longitude),
 #        )
 
-for i in range(NUM_POINTS):
-    latitude, longitude = lines[i]
-    request_price = urllib2.Request('https://api.uber.com/v1/estimates/price?start_latitude={}&start_longitude={}&end_latitude={}&end_longitude={}'.
-                format(
-                    latitude,
-                    longitude,
-                    latitude,
-                    longitude,
+try:
+    for i in range(NUM_POINTS):
+        latitude, longitude = lines[i]
+        request_price = urllib2.Request('https://api.uber.com/v1/estimates/price?start_latitude={}&start_longitude={}&end_latitude={}&end_longitude={}'.
+                    format(
+                        latitude,
+                        longitude,
+                        latitude,
+                        longitude,
+                    )
                 )
-            )
 
-    request_price.add_header('Authorization', 'Token %s' % SERVER_TOKEN)
+        request_price.add_header('Authorization', 'Token %s' % SERVER_TOKEN)
 
-    resp = urllib2.urlopen(request_price)
-    data = json.load(resp)
+        resp = urllib2.urlopen(request_price)
+        data = json.load(resp)
 
-    data['latitude'] = latitude
-    data['longitude'] = longitude
+        data['prices'] = [_prune_price(price) for price in data['prices']]
 
-    data_list.append(data)
+        data['latitude'] = latitude
+        data['longitude'] = longitude
+
+        data_list.append(data)
+except Exception:
+    pass
+
+##############################
+## Set up aerospike connection
+##############################
+config = {
+    'hosts': [
+        ( '54.152.234.234', 3000, )
+    ],
+    'policies': {
+        'timeout': 1000,
+    }
+}
+
+client = aerospike.client(config)
+client.connect()
 
 ##############
 # Write to DB
@@ -88,7 +99,10 @@ stored_data = {
     'timestamp': str(epoch_time),
     'data': data_list,
 }
-client.put(key, stored_data)
+try:
+    client.put(key, stored_data)
+except Exception:
+    pass
 
 ##############
 # Log to console
