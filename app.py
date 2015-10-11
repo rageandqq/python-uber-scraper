@@ -61,8 +61,8 @@ data_list = []
 #            format(latitude, longitude),
 #        )
 
-try:
-    for latitude, longitude in lines:
+for latitude, longitude in lines:
+    try:
         request_price = urllib2.Request('https://api.uber.com/v1/estimates/price?start_latitude={}&start_longitude={}&end_latitude={}&end_longitude={}'.
                     format(latitude, longitude, latitude, longitude)
                 )
@@ -78,8 +78,8 @@ try:
         data['longitude'] = longitude
 
         data_list.append(data)
-except Exception:
-    pass
+    except Exception:
+        break
 
 
 current_milli_time = _current_milli_time()

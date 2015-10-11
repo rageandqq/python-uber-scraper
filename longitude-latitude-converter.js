@@ -520,46 +520,6 @@ function utm_geo(x_utm, y_utm, zone)
    }
    return true;
 }
-
-// /*------------------------------------------*/
-// function getoll()
-// {
-//   return ({olat: 0, olon: 0});
-// }
-//
-// /*-------------------------------------------------*/
-// function getsll()
-// {
-//    with(Math)
-//    {
-//       /* get the input lat and lon position to be convert */
-//
-//        if( Form.DecSLon.value != "" )
-//        {
-//            slon=1*Form.DecSLon.value;
-//        }
-//        else
-//        {
-//
-//            slon=deg_min_2_deg(slond,slonm);
-//        }
-//
-//        if (slon > 180) alert("Invalid Longitude, valid range 0-180");
-//
-//        if (sewdir == "W")
-//        {
-//             slon = -1*slon;
-//        }
-//
-//        var sll={};
-//        sll={slat:slat,slon:slon};
-//        return (sll);
-//    }
-//    return true;
-// }
-//
-
-
 /*----------------------------------------------------------*/
 
 function ll2xy(latitude, longitude)
@@ -878,50 +838,6 @@ origin);
 // this notice intact. You may remove comments below this line.
 //
 // END OF NOTICE
-//
-// INSTRUCTIONS: this WON'T WORK unless you do the following in the
-// document that includes it.
-//
-// 1. Specify the right doctype at the top of your page:
-//
-//    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-//      "http://www.w3.org/TR/html4/strict.dtd">
-//
-// 2. Set the right event handlers in your body element
-//    (you may call other functions too, use semicolons to separate).
-//    Pass the interior width and height YOU want to resizingWindowLoaded.
-//
-//    <body
-//      onLoad="resizingWindowLoaded(500, 500)"
-//      onResize="resizingWindowResized()">
-//
-// 3. BE SURE to call resizingWindowEndOfBody() before you
-// close your <body> element:
-//
-//      <script>
-//        resizingWindowEndOfBody();
-//      </script>
-//    </body>
-//
-// And that's all it takes!
-//
-// WARNINGS:
-//
-// 1. In my tests, the very latest version of Opera doesn't allow
-//   JavaScript to resize the browser window AT ALL, even if the
-//   window resizing option is enabled under
-//   Tools->Advanced->JavaScript Options. There's not much to
-//   be done about that. However the code should work correctly if
-//   your copy of Opera does allow resizing. Note that there is
-//   also a small fudge factor to allow for a vertical scrollbar in
-//   Opera, because Opera is the only browser that can't be
-//   convinced to report the true interior usable space not wasted
-//   by a scrollbar, and we never, ever want to force a
-//   horizontal scrollbar unnecessarily.
-//
-// 2. Users with JavaScript disabled won't get the resizing behavior.
-//   Hey, there's no miracle cure for that! Design your page layout to
-//   cope adequately if the browser window is not the expected size.
 
 function resizingWindowIsIE()
 {
@@ -1074,14 +990,16 @@ function printAsLatLong(file, grid) {
   });
 }
 
-lat1 = parseFloat(process.argv[2])
-long1 = parseFloat(process.argv[3])
+square_depth = parseInt(process.argv[2])
 
-lat2 = parseFloat(process.argv[4])
-long2 = parseFloat(process.argv[5])
+lat1 = parseFloat(process.argv[3])
+long1 = parseFloat(process.argv[4])
+
+lat2 = parseFloat(process.argv[5])
+long2 = parseFloat(process.argv[6])
 
 xy1 = ll2xy(lat1, long1)
 xy2 = ll2xy(lat2, long2)
 
-xy_grid = return2DXYGrid(xy1, xy2, 10)
+xy_grid = return2DXYGrid(xy1, xy2, square_depth)
 printAsLatLong('points.txt', xy_grid)
