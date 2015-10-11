@@ -4,16 +4,21 @@ Usage:
 """
 
 import aerospike
-import datetime
 import json
 import sys
+import time
 import urllib2
+
+start_time = time.time()
 
 def _prune_price(price):
     return {
         'display_name': price['display_name'],
         'surge_multiplier': price['surge_multiplier'],
     }
+
+def _current_milli_time():
+    return int(round(time.time() * 1000))
 
 args = sys.argv
 
@@ -77,11 +82,11 @@ except Exception:
     pass
 
 
-epoch_time = (datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds()
-key = (NAMESPACE, SET, str(epoch_time))
+current_milli_time = _current_milli_time()
+key = (NAMESPACE, SET, current_milli_time)
 
 stored_data = {
-    'timestamp': str(epoch_time),
+    'timestamp': current_milli_time,
     'data': data_list,
 }
 
@@ -110,4 +115,5 @@ except Exception:
 ##############
 # Log to console
 ##############
+print(' --- Execution took %s seconds --- ' % (time.time() - start_time))
 print json.dumps(stored_data, indent=4, sort_keys=False)

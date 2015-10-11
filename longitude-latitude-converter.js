@@ -1033,8 +1033,8 @@ function resizingWindowGo()
 
 function return2DXYGrid(xy1, xy2, n) {
   with(Math) {
-    var dx = abs(xy1.x - xy2.x);
-    var dy = abs(xy1.y - xy2.y);
+    var dx = abs(xy1.x - xy2.x)/n;
+    var dy = abs(xy1.y - xy2.y)/n;
 
     var minX = min(xy1.x, xy2.x);
     var minY = min(xy1.y, xy2.y);
